@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_complete_guide/models/product.dart';
+import 'package:flutter_complete_guide/screens/product_details_screen.dart';
 
 class ProductItem extends StatelessWidget {
   final Product _product;
@@ -11,7 +12,12 @@ class ProductItem extends StatelessWidget {
     return ClipRRect(
       borderRadius: BorderRadius.circular(10),
       child: GridTile(
-        child: Image.network(_product.imageUrl, fit: BoxFit.cover),
+        child: GestureDetector(
+            child: Image.network(_product.imageUrl, fit: BoxFit.cover),
+            onTap: () {
+              Navigator.of(context).pushNamed(ProductDetailsScreen.routeName,
+                  arguments: _product.id);
+            }),
         footer: GridTileBar(
           leading: IconButton(
             icon: Icon(Icons.favorite),
