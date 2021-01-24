@@ -8,7 +8,8 @@ class ProductItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    _product = Provider.of<Product>(context);
+    // Get the data only once
+    _product = Provider.of<Product>(context, listen: false);
     return ClipRRect(
       borderRadius: BorderRadius.circular(10),
       child: GridTile(
@@ -19,14 +20,21 @@ class ProductItem extends StatelessWidget {
                   arguments: _product.id);
             }),
         footer: GridTileBar(
-          leading: IconButton(
-            icon: (_product.isFavorite)
-                ? Icon(Icons.favorite)
-                : Icon(Icons.favorite_border),
-            onPressed: () {
-              _product.toggleFavoriteStatus();
-            },
-            color: Theme.of(context).accentColor,
+          // same as Provider.of but it's a widget instead of data, so we can
+          // use it in a widget tree, to update only parts of the tree when data
+          // changes. This is a second observer which listens to changes regardless
+          // of if we have a provider on root or not and if it listens or not. 
+          // Optimization, and fine control of changes.
+          leading: Consumer<Product>(
+            builder: (ctx, product, _) => IconButton(
+              icon: (_product.isFavorite)
+                  ? Icon(Icons.favorite)
+                  : Icon(Icons.favorite_border),
+              onPressed: () {
+                _product.toggleFavoriteStatus();
+              },
+              color: Theme.of(context).accentColor,
+            ),
           ),
           trailing: IconButton(
               icon: Icon(Icons.shopping_cart),
