@@ -12,6 +12,11 @@ class ProductsProvider with ChangeNotifier {
     return [..._products];
   }
 
+  List<Product> get favoriteItems {
+    // returning new list to avoid mutatitng the original list, no mutableList like Kotlin
+    return _products.where((element) => element.isFavorite).toList();
+  }
+
   Product findById(String id) {
     return _products.firstWhere((element) => element.id == id);
   }
