@@ -1,23 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../providers/cart_procider.dart';
 import '../models/product.dart';
 import '../screens/product_details_screen.dart';
 
 class ProductItem extends StatelessWidget {
-  Product _product;
 
   @override
   Widget build(BuildContext context) {
     // Get the data only once
-    _product = Provider.of<Product>(context, listen: false);
+    Product product = Provider.of<Product>(context, listen: false);
+    CartProvider cart = Provider.of<CartProvider>(context, listen: false);
     return ClipRRect(
       borderRadius: BorderRadius.circular(10),
       child: GridTile(
         child: GestureDetector(
-            child: Image.network(_product.imageUrl, fit: BoxFit.cover),
+            child: Image.network(product.imageUrl, fit: BoxFit.cover),
             onTap: () {
               Navigator.of(context).pushNamed(ProductDetailsScreen.routeName,
-                  arguments: _product.id);
+                  arguments: product.id);
             }),
         footer: GridTileBar(
           // same as Provider.of but it's a widget instead of data, so we can
@@ -27,22 +28,24 @@ class ProductItem extends StatelessWidget {
           // Optimization, and fine control of changes.
           leading: Consumer<Product>(
             builder: (ctx, product, _) => IconButton(
-              icon: (_product.isFavorite)
+              icon: (product.isFavorite)
                   ? Icon(Icons.favorite)
                   : Icon(Icons.favorite_border),
               onPressed: () {
-                _product.toggleFavoriteStatus();
+                product.toggleFavoriteStatus();
               },
               color: Theme.of(context).accentColor,
             ),
           ),
           trailing: IconButton(
               icon: Icon(Icons.shopping_cart),
-              onPressed: () {},
+              onPressed: () {
+                cart.addItem(product.id, product.title, product.price);
+              },
               color: Theme.of(context).accentColor),
           backgroundColor: Colors.black87,
           title: Text(
-            _product.title,
+            product.title,
             textAlign: TextAlign.center,
           ),
         ),

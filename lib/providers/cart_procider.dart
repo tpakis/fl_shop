@@ -16,7 +16,7 @@ class CartItem {
 }
 
 class CartProvider with ChangeNotifier {
-  Map<String, CartItem> _items;
+  Map<String, CartItem> _items = {};
 
   Map<String, CartItem> get items {
     return {...items};
@@ -28,14 +28,19 @@ class CartProvider with ChangeNotifier {
           CartItem(id: existingItem.id,
               title: existingItem.title,
               quantity: existingItem.quantity + 1,
-              price: existingItem.price))
+              price: existingItem.price));
     } else {
       _items.putIfAbsent(productId, () =>
           CartItem(id: DateTime.now().toString(),
               title: title,
               quantity: 1,
-              price: price))
+              price: price));
     }
+    notifyListeners();
+  }
+
+  int get itemCount {
+    return _items.length;
   }
 
 }
