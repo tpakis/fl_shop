@@ -39,6 +39,16 @@ class CartProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  void removeItemByProductId(String productId) {
+    _items.remove(productId);
+    notifyListeners();
+  }
+
+  void removeItemByCartItemId(String cartItemId) {
+    _items.removeWhere((key, value) => value.id == cartItemId);
+    notifyListeners();
+  }
+
   double get totalCartAmount {
     var sum = 0.0;
 
