@@ -37,12 +37,15 @@ class ProductItem extends StatelessWidget {
               color: Theme.of(context).accentColor,
             ),
           ),
-          trailing: IconButton(
-              icon: Icon(Icons.shopping_cart),
-              onPressed: () {
-                cart.addItem(product.id, product.title, product.price);
-              },
-              color: Theme.of(context).accentColor),
+          trailing: Material(
+            color: Colors.transparent,
+            child: IconButton(
+                icon: Icon(Icons.shopping_cart),
+                onPressed: () {
+                  cart.addItem(product.id, product.title, product.price);
+                },
+                color: Theme.of(context).accentColor),
+          ),
           backgroundColor: Colors.black87,
           title: Text(
             product.title,
