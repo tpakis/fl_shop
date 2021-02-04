@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_complete_guide/providers/cart_provider.dart';
-import 'package:flutter_complete_guide/screens/cart_screen.dart';
+import 'package:provider/provider.dart';
+import './providers/cart_provider.dart';
+import './providers/orders_provider.dart';
+import './screens/cart_screen.dart';
 import './screens/product_details_screen.dart';
 import './screens/products_overview_screen.dart';
 import './providers/products_provider.dart';
-import 'package:provider/provider.dart';
 
 void main() => runApp(MyApp());
 
@@ -13,11 +14,11 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(
-            // we are instantiating the provider, it is recommended to use the builder
-            // for efficiency.
-            create: (ctx) => ProductsProvider()),
+        // we are instantiating the provider, it is recommended to use the builder
+        // for efficiency.
+        ChangeNotifierProvider(create: (ctx) => ProductsProvider()),
         ChangeNotifierProvider(create: (ctx) => CartProvider()),
+        ChangeNotifierProvider(create: (ctx) => OrdersProvider())
       ],
       child: MaterialApp(
         title: 'MyShop',

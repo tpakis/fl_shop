@@ -49,6 +49,11 @@ class CartProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  void clearCart() {
+    _items.clear();
+    notifyListeners();
+  }
+
   double get totalCartAmount {
     var sum = 0.0;
 
