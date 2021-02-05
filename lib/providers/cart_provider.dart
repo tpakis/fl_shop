@@ -49,6 +49,21 @@ class CartProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  void reduceQuantityOfCartItem(String productId) {
+    if (!_items.containsKey(productId)) {
+      return;
+    } else if (_items[productId].quantity > 1) {
+      _items.update(productId, (existingItem) =>
+          CartItem(id: existingItem.id,
+              title: existingItem.title,
+              quantity: existingItem.quantity - 1,
+              price: existingItem.price));
+    } else {
+      removeItemByProductId(productId);
+    }
+    notifyListeners();
+  }
+
   void clearCart() {
     _items.clear();
     notifyListeners();
@@ -57,7 +72,9 @@ class CartProvider with ChangeNotifier {
   double get totalCartAmount {
     var sum = 0.0;
 
-    _items.forEach((key, value) { sum += value.price * value.quantity; });
+    _items.forEach((key, value) {
+      sum += value.price * value.quantity;
+    });
     return sum;
   }
 

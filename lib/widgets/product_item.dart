@@ -5,7 +5,6 @@ import '../models/product.dart';
 import '../screens/product_details_screen.dart';
 
 class ProductItem extends StatelessWidget {
-
   @override
   Widget build(BuildContext context) {
     // Get the data only once
@@ -24,7 +23,7 @@ class ProductItem extends StatelessWidget {
           // same as Provider.of but it's a widget instead of data, so we can
           // use it in a widget tree, to update only parts of the tree when data
           // changes. This is a second observer which listens to changes regardless
-          // of if we have a provider on root or not and if it listens or not. 
+          // of if we have a provider on root or not and if it listens or not.
           // Optimization, and fine control of changes.
           leading: Consumer<Product>(
             builder: (ctx, product, _) => IconButton(
@@ -43,6 +42,19 @@ class ProductItem extends StatelessWidget {
                 icon: Icon(Icons.shopping_cart),
                 onPressed: () {
                   cart.addItem(product.id, product.title, product.price);
+                  ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: const Text('Item was added to the cart!'),
+                      duration: Duration(seconds: 2),
+                      action: SnackBarAction(
+                        label: "UNDO",
+                        onPressed: () {
+                          cart.reduceQuantityOfCartItem(product.id);
+                        },
+                      ),
+                    ),
+                  );
                 },
                 color: Theme.of(context).accentColor),
           ),

@@ -25,6 +25,31 @@ class CartListItem extends StatelessWidget {
         padding: const EdgeInsets.only(right: 20),
       ),
       direction: DismissDirection.endToStart,
+      confirmDismiss: (direction) {
+        // show dialog returns a future when it's removed - pop-ed! So we can pop
+        // it and pass the return value in the pop method as parameter
+        return showDialog(
+            context: context,
+            builder: (ctx) => AlertDialog(
+                  title: Text("Are you sure?"),
+                  content:
+                      Text("Do you want to remove the item from the cart?"),
+                  actions: [
+                    FlatButton(
+                      onPressed: () {
+                        Navigator.of(ctx).pop(false);
+                      },
+                      child: Text("No"),
+                    ),
+                    FlatButton(
+                      onPressed: () {
+                        Navigator.of(ctx).pop(true);
+                      },
+                      child: Text("Yes"),
+                    ),
+                  ],
+                ));
+      },
       onDismissed: (direction) {
         Provider.of<CartProvider>(context, listen: false)
             .removeItemByCartItemId(_id);
