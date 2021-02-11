@@ -13,6 +13,8 @@ class _EditProductScreenState extends State<EditProductScreen> {
   final _descriptionFocusNode = FocusNode();
   final _imageUrlFocusNode = FocusNode();
   final _imageUrlController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  final _formProduct = FormProduct();
 
   @override
   void initState() {
@@ -27,15 +29,25 @@ class _EditProductScreenState extends State<EditProductScreen> {
     }
   }
 
+  void _saveForm() {
+    // will call on save for each text input field
+    _formKey.currentState.save();
+    print(_formProduct);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text("Edit Product"),
+        actions: [
+          IconButton(icon: Icon(Icons.save), onPressed: _saveForm),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
+          key: _formKey,
           /* For very long FORMS (i.e. many input fields) OR in landscape mode (i.e. less vertical space on the screen),
         * because the ListView widget dynamically removes and re-adds widgets as they scroll out of and back into view.
         * we must use Column (combined with SingleChildScrollView) instead. */
@@ -47,24 +59,31 @@ class _EditProductScreenState extends State<EditProductScreen> {
                 // called when next button pressed on keyboard
                 onFieldSubmitted: (value) =>
                     FocusScope.of(context).requestFocus(_priceFocusNode),
+                onSaved: (value) {
+                  _formProduct.title = value;
+                },
               ),
               TextFormField(
-                decoration: InputDecoration(labelText: "Price"),
-                textInputAction: TextInputAction.next,
-                keyboardType: TextInputType.number,
-                focusNode: _priceFocusNode,
-                onFieldSubmitted: (value) =>
-                    FocusScope.of(context).requestFocus(_descriptionFocusNode),
-              ),
+                  decoration: InputDecoration(labelText: "Price"),
+                  textInputAction: TextInputAction.next,
+                  keyboardType: TextInputType.number,
+                  focusNode: _priceFocusNode,
+                  onFieldSubmitted: (value) => FocusScope.of(context)
+                      .requestFocus(_descriptionFocusNode),
+                  onSaved: (value) {
+                    _formProduct.price = double.parse(value);
+                  }),
               TextFormField(
-                decoration: InputDecoration(labelText: "Description"),
-                maxLines: 3,
-                // shows enter on keyboard for new line, that has the side-effect
-                // we can't listen for onFieldSubmitted
-                keyboardType: TextInputType.multiline,
-                textInputAction: TextInputAction.next,
-                focusNode: _descriptionFocusNode,
-              ),
+                  decoration: InputDecoration(labelText: "Description"),
+                  maxLines: 3,
+                  // shows enter on keyboard for new line, that has the side-effect
+                  // we can't listen for onFieldSubmitted
+                  keyboardType: TextInputType.multiline,
+                  textInputAction: TextInputAction.next,
+                  focusNode: _descriptionFocusNode,
+                  onSaved: (value) {
+                    _formProduct.description = value;
+                  }),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
@@ -92,6 +111,12 @@ class _EditProductScreenState extends State<EditProductScreen> {
                       onEditingComplete: () {
                         setState(() {});
                       },
+                      onFieldSubmitted: (_) {
+                        _saveForm();
+                      },
+                      onSaved: (value) {
+                        _formProduct.imageUrl = value;
+                      },
                     ),
                   ),
                 ],
@@ -112,4 +137,14 @@ class _EditProductScreenState extends State<EditProductScreen> {
     _imageUrlFocusNode.dispose();
     super.dispose();
   }
+}
+
+// useful way to capture form data with mutable fields
+
+class FormProduct {
+  String id;
+  String title;
+  String description;
+  double price;
+  String imageUrl;
 }
