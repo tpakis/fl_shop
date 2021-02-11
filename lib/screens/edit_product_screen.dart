@@ -11,6 +11,21 @@ class _EditProductScreenState extends State<EditProductScreen> {
   // we have to dispose them when the state gets disposed because they will leak memory!
   final _priceFocusNode = FocusNode();
   final _descriptionFocusNode = FocusNode();
+  final _imageUrlFocusNode = FocusNode();
+  final _imageUrlController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    // we have to remove listener or we will leak memory
+    _imageUrlFocusNode.addListener(_updateImageUrl);
+  }
+
+  void _updateImageUrl() {
+    if (!_imageUrlFocusNode.hasFocus) {
+      setState(() {});
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,6 +65,37 @@ class _EditProductScreenState extends State<EditProductScreen> {
                 textInputAction: TextInputAction.next,
                 focusNode: _descriptionFocusNode,
               ),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Container(
+                    width: 100,
+                    height: 100,
+                    margin: EdgeInsets.only(top: 80, right: 10.0),
+                    decoration: BoxDecoration(
+                      border: Border.all(width: 1, color: Colors.grey),
+                    ),
+                    child: (_imageUrlController.text.isEmpty)
+                        ? Text("Enter a URL")
+                        : FittedBox(
+                            child: Image.network(_imageUrlController.text),
+                            fit: BoxFit.cover,
+                          ),
+                  ),
+                  Expanded(
+                    child: TextFormField(
+                      decoration: InputDecoration(labelText: 'Image URL'),
+                      keyboardType: TextInputType.url,
+                      textInputAction: TextInputAction.done,
+                      controller: _imageUrlController,
+                      focusNode: _imageUrlFocusNode,
+                      onEditingComplete: () {
+                        setState(() {});
+                      },
+                    ),
+                  ),
+                ],
+              )
             ],
           ),
         ),
@@ -61,6 +107,9 @@ class _EditProductScreenState extends State<EditProductScreen> {
   void dispose() {
     _priceFocusNode.dispose();
     _descriptionFocusNode.dispose();
+    _imageUrlController.dispose();
+    _imageUrlFocusNode.removeListener(_updateImageUrl);
+    _imageUrlFocusNode.dispose();
     super.dispose();
   }
 }
