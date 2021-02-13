@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_complete_guide/models/product.dart';
+import 'package:provider/provider.dart';
+
+import '../providers/products_provider.dart';
 
 class EditProductScreen extends StatefulWidget {
   static const routeName = "/edit_product";
@@ -34,7 +38,16 @@ class _EditProductScreenState extends State<EditProductScreen> {
     if (isValid) {
       // will call on save for each text input field
       _formKey.currentState.save();
-      print(_formProduct);
+      Provider.of<ProductsProvider>(context, listen: false)
+          .addProduct(_formProduct.toProduct());
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('New product was added!'),
+          duration: Duration(seconds: 1),
+        ),
+      );
+      Navigator.of(context).pop();
     }
   }
 
@@ -184,9 +197,17 @@ class _EditProductScreenState extends State<EditProductScreen> {
 
 // useful way to capture form data with mutable fields
 class FormProduct {
-  String id;
   String title;
   String description;
   double price;
   String imageUrl;
+
+  Product toProduct() {
+    return Product(
+        id: "null",
+        title: title,
+        description: description,
+        price: price,
+        imageUrl: imageUrl);
+  }
 }

@@ -22,7 +22,15 @@ class ProductsProvider with ChangeNotifier {
   }
 
   void addProduct(final Product product) {
-    _products.add(product);
+    final newProduct = Product(
+      // add a fake id for our new product
+        id: DateTime.now().toString(),
+        title: product.title,
+        description: product.description,
+        price: product.price,
+        imageUrl: product.imageUrl);
+
+    _products.add(newProduct);
     notifyListeners();
   }
 }
