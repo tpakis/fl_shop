@@ -20,11 +20,29 @@ class _EditProductScreenState extends State<EditProductScreen> {
   final _formKey = GlobalKey<FormState>();
   final _formProduct = FormProduct();
 
+  // just to avoid multiple state changes from didChangeDependencies
+  var isInit = true;
+
   @override
   void initState() {
     super.initState();
     // we have to remove listener or we will leak memory
     _imageUrlFocusNode.addListener(_updateImageUrl);
+  }
+
+  @override
+  void didChangeDependencies() {
+    if (isInit) {
+      String productId = ModalRoute.of(context).settings.arguments as String;
+      if (productId != null) {
+        Product product = Provider.of<ProductsProvider>(context, listen: false)
+            .findById(productId);
+        _formProduct.updateValuesFromProduct(product);
+        _imageUrlController.text = product.imageUrl;
+      }
+    }
+    isInit = false;
+    super.didChangeDependencies();
   }
 
   void _updateImageUrl() {
@@ -39,11 +57,13 @@ class _EditProductScreenState extends State<EditProductScreen> {
       // will call on save for each text input field
       _formKey.currentState.save();
       Provider.of<ProductsProvider>(context, listen: false)
-          .addProduct(_formProduct.toProduct());
+          .addOrEditProduct(_formProduct.toProduct());
       ScaffoldMessenger.of(context).hideCurrentSnackBar();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text('New product was added!'),
+          content: (_formProduct.id.isEmpty)
+              ? const Text('New product was added!')
+              : const Text('New product was edited!'),
           duration: Duration(seconds: 1),
         ),
       );
@@ -55,7 +75,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Edit Product"),
+        title: (_formProduct.id.isEmpty)? const Text("Add Product") : const Text("Edit Product"),
         actions: [
           IconButton(icon: Icon(Icons.save), onPressed: _saveForm),
         ],
@@ -71,6 +91,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
           child: ListView(
             children: [
               TextFormField(
+                initialValue: _formProduct.title,
                 decoration: InputDecoration(labelText: "Title"),
                 textInputAction: TextInputAction.next,
                 // called when next button pressed on keyboard
@@ -85,6 +106,9 @@ class _EditProductScreenState extends State<EditProductScreen> {
                 },
               ),
               TextFormField(
+                initialValue: (_formProduct.price != null)
+                    ? _formProduct.price.toString()
+                    : "",
                 decoration: InputDecoration(labelText: "Price"),
                 textInputAction: TextInputAction.next,
                 keyboardType: TextInputType.number,
@@ -109,6 +133,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
                 },
               ),
               TextFormField(
+                initialValue: _formProduct.description,
                 decoration: InputDecoration(labelText: "Description"),
                 maxLines: 3,
                 // shows enter on keyboard for new line, that has the side-effect
@@ -197,14 +222,23 @@ class _EditProductScreenState extends State<EditProductScreen> {
 
 // useful way to capture form data with mutable fields
 class FormProduct {
-  String title;
-  String description;
+  String id = "";
+  String title = "";
+  String description = "";
   double price;
   String imageUrl;
 
+  void updateValuesFromProduct(final Product product) {
+    id = product.id;
+    title = product.title;
+    description = product.description;
+    price = product.price;
+    imageUrl = product.imageUrl;
+  }
+
   Product toProduct() {
     return Product(
-        id: "null",
+        id: id,
         title: title,
         description: description,
         price: price,

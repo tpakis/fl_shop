@@ -33,4 +33,14 @@ class ProductsProvider with ChangeNotifier {
     _products.add(newProduct);
     notifyListeners();
   }
+
+  void addOrEditProduct(final Product newProduct) {
+    final productIndex = _products.indexWhere((element) => element.id == newProduct.id);
+    if (productIndex != -1) {
+      _products[productIndex] = newProduct;
+      notifyListeners();
+    } else {
+      addProduct(newProduct);
+    }
+  }
 }
