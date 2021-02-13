@@ -24,15 +24,18 @@ class _EditProductScreenState extends State<EditProductScreen> {
   }
 
   void _updateImageUrl() {
-    if (!_imageUrlFocusNode.hasFocus) {
+    if (!_imageUrlFocusNode.hasFocus && _isValidUrl(_imageUrlController.text)) {
       setState(() {});
     }
   }
 
   void _saveForm() {
-    // will call on save for each text input field
-    _formKey.currentState.save();
-    print(_formProduct);
+    bool isValid = _formKey.currentState.validate();
+    if (isValid) {
+      // will call on save for each text input field
+      _formKey.currentState.save();
+      print(_formProduct);
+    }
   }
 
   @override
@@ -47,6 +50,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
+          autovalidateMode: AutovalidateMode.disabled,
           key: _formKey,
           /* For very long FORMS (i.e. many input fields) OR in landscape mode (i.e. less vertical space on the screen),
         * because the ListView widget dynamically removes and re-adds widgets as they scroll out of and back into view.
@@ -62,28 +66,54 @@ class _EditProductScreenState extends State<EditProductScreen> {
                 onSaved: (value) {
                   _formProduct.title = value;
                 },
+                validator: (value) {
+                  // returning null means the value is correct otherwise the string will be used as error message
+                  return (value.isEmpty) ? "Please enter a title" : null;
+                },
               ),
               TextFormField(
-                  decoration: InputDecoration(labelText: "Price"),
-                  textInputAction: TextInputAction.next,
-                  keyboardType: TextInputType.number,
-                  focusNode: _priceFocusNode,
-                  onFieldSubmitted: (value) => FocusScope.of(context)
-                      .requestFocus(_descriptionFocusNode),
-                  onSaved: (value) {
-                    _formProduct.price = double.parse(value);
-                  }),
+                decoration: InputDecoration(labelText: "Price"),
+                textInputAction: TextInputAction.next,
+                keyboardType: TextInputType.number,
+                focusNode: _priceFocusNode,
+                onFieldSubmitted: (value) =>
+                    FocusScope.of(context).requestFocus(_descriptionFocusNode),
+                onSaved: (value) {
+                  _formProduct.price = double.parse(value);
+                },
+                validator: (value) {
+                  if (value.isEmpty) {
+                    return "Please enter a price";
+                  }
+                  final price = double.tryParse(value);
+                  if (price == null) {
+                    return "Please enter a valid number";
+                  }
+                  if (price <= 0) {
+                    return "Please enter a positive price";
+                  }
+                  return null;
+                },
+              ),
               TextFormField(
-                  decoration: InputDecoration(labelText: "Description"),
-                  maxLines: 3,
-                  // shows enter on keyboard for new line, that has the side-effect
-                  // we can't listen for onFieldSubmitted
-                  keyboardType: TextInputType.multiline,
-                  textInputAction: TextInputAction.next,
-                  focusNode: _descriptionFocusNode,
-                  onSaved: (value) {
-                    _formProduct.description = value;
-                  }),
+                decoration: InputDecoration(labelText: "Description"),
+                maxLines: 3,
+                // shows enter on keyboard for new line, that has the side-effect
+                // we can't listen for onFieldSubmitted
+                keyboardType: TextInputType.multiline,
+                textInputAction: TextInputAction.next,
+                focusNode: _descriptionFocusNode,
+                onSaved: (value) {
+                  _formProduct.description = value;
+                },
+                validator: (value) {
+                  return (value.isEmpty)
+                      ? "Please enter a description"
+                      : (value.length < 5)
+                          ? "description too short"
+                          : null;
+                },
+              ),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
@@ -117,6 +147,13 @@ class _EditProductScreenState extends State<EditProductScreen> {
                       onSaved: (value) {
                         _formProduct.imageUrl = value;
                       },
+                      validator: (value) {
+                        return (value.isEmpty)
+                            ? "Please enter a URL"
+                            : (_isValidUrl(value))
+                                ? null
+                                : "Please enter a valid URL";
+                      },
                     ),
                   ),
                 ],
@@ -126,6 +163,12 @@ class _EditProductScreenState extends State<EditProductScreen> {
         ),
       ),
     );
+  }
+
+  bool _isValidUrl(String url) {
+    var urlPattern =
+        r"(https?|ftp)://([-A-Z0-9.]+)(/[-A-Z0-9+&@#/%=~_|!:,.;]*)?(\?[A-Z0-9+&@#/%=~_|!:‌​,.;]*)?";
+    return RegExp(urlPattern, caseSensitive: false).hasMatch(url);
   }
 
   @override
@@ -140,7 +183,6 @@ class _EditProductScreenState extends State<EditProductScreen> {
 }
 
 // useful way to capture form data with mutable fields
-
 class FormProduct {
   String id;
   String title;
