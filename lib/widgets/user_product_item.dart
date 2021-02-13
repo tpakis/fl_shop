@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_complete_guide/screens/edit_product_screen.dart';
+import '../screens/edit_product_screen.dart';
 
 class UserProductItem extends StatelessWidget {
   final String id;
   final String title;
   final String imageUrl;
+  // we could use provider also but why add an extra dependency here
+  final Function deleteProduct;
 
-  UserProductItem({this.id, this.title, this.imageUrl});
+  UserProductItem({this.id, this.title, this.imageUrl, this.deleteProduct});
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +30,9 @@ class UserProductItem extends StatelessWidget {
             ),
             IconButton(
               icon: Icon(Icons.delete),
-              onPressed: () {},
+              onPressed: () {
+                deleteProduct();
+              },
               color: Theme.of(context).errorColor,
             ),
           ],
