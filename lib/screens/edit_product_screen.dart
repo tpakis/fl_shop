@@ -21,7 +21,8 @@ class _EditProductScreenState extends State<EditProductScreen> {
   final _formProduct = FormProduct();
 
   // just to avoid multiple state changes from didChangeDependencies
-  var isInit = true;
+  var _isInit = true;
+  var _isLoading = false;
 
   @override
   void initState() {
@@ -32,7 +33,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
 
   @override
   void didChangeDependencies() {
-    if (isInit) {
+    if (_isInit) {
       String productId = ModalRoute.of(context).settings.arguments as String;
       if (productId != null) {
         Product product = Provider.of<ProductsProvider>(context, listen: false)
@@ -41,7 +42,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
         _imageUrlController.text = product.imageUrl;
       }
     }
-    isInit = false;
+    _isInit = false;
     super.didChangeDependencies();
   }
 
@@ -54,20 +55,28 @@ class _EditProductScreenState extends State<EditProductScreen> {
   void _saveForm() {
     bool isValid = _formKey.currentState.validate();
     if (isValid) {
+      setState(() {
+        _isLoading = true;
+      });
       // will call on save for each text input field
       _formKey.currentState.save();
       Provider.of<ProductsProvider>(context, listen: false)
-          .addOrEditProduct(_formProduct.toProduct());
-      ScaffoldMessenger.of(context).hideCurrentSnackBar();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: (_formProduct.id.isEmpty)
-              ? const Text('New product was added!')
-              : const Text('New product was edited!'),
-          duration: Duration(seconds: 1),
-        ),
-      );
-      Navigator.of(context).pop();
+          .addOrEditProduct(_formProduct.toProduct())
+          .then((_) {
+        setState(() {
+          _isLoading = false;
+        });
+        ScaffoldMessenger.of(context).hideCurrentSnackBar();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: (_formProduct.id.isEmpty)
+                ? const Text('New product was added!')
+                : const Text('New product was edited!'),
+            duration: Duration(seconds: 1),
+          ),
+        );
+        Navigator.of(context).pop();
+      });
     }
   }
 
@@ -75,12 +84,14 @@ class _EditProductScreenState extends State<EditProductScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: (_formProduct.id.isEmpty)? const Text("Add Product") : const Text("Edit Product"),
+        title: (_formProduct.id.isEmpty)
+            ? const Text("Add Product")
+            : const Text("Edit Product"),
         actions: [
           IconButton(icon: Icon(Icons.save), onPressed: _saveForm),
         ],
       ),
-      body: Padding(
+      body: (_isLoading) ? Center(child: CircularProgressIndicator(),) : Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
           autovalidateMode: AutovalidateMode.disabled,
