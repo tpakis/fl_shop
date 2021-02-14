@@ -40,7 +40,10 @@ class ProductsProvider with ChangeNotifier {
         // we need to store it per user in the future, temp solution
         "isFavorite": product.isFavorite
       }),
-    )
+    ).catchError((error) {
+      print(error);
+      throw error;
+    })
         .then((response) {
       final newProduct = Product(
           // add the id of the product created in firebase, as name
