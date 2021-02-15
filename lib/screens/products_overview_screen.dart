@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../providers/products_provider.dart';
 import '../providers/cart_provider.dart';
 import '../screens/cart_screen.dart';
 import '../widgets/app_drawer.dart';
@@ -17,8 +18,17 @@ class ProductsOverviewScreen extends StatefulWidget {
 }
 
 class _ProductsOverviewScreenState extends State<ProductsOverviewScreen> {
+
   final productsList = DUMMY_PRODUCTS;
   var _showOnlyFavorites = false;
+
+  @override
+  void initState() {
+    // it wouldn't work without liste false, it would require hack with didChangeDependeciews
+    // or Future.delayed(Duration.zero).then(use provider)
+    Provider.of<ProductsProvider>(context, listen: false).fetchAndSetProducts();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -64,4 +74,5 @@ class _ProductsOverviewScreenState extends State<ProductsOverviewScreen> {
       drawer: AppDrawer(),
     );
   }
+
 }

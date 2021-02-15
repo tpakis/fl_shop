@@ -7,6 +7,8 @@ import '../models/product.dart';
 
 // with -a mixin which is similar to Delegate pattern in Kotlin
 class ProductsProvider with ChangeNotifier {
+  // products.json is our name of the node which will be ether updated or created on the fly - realtime db (json file)
+  static const String url = "https://fl-shop-d7c4e-default-rtdb.firebaseio.com/products.json";
   // backing private property
   final List<Product> _products = DUMMY_PRODUCTS;
 
@@ -24,10 +26,16 @@ class ProductsProvider with ChangeNotifier {
     return _products.firstWhere((element) => element.id == id);
   }
 
+  Future<void> fetchAndSetProducts() async {
+    try {
+      final response = await http.get(url);
+    } catch (error) {
+      print(error);
+      throw (error);
+    }
+  }
+
   Future<void> addProduct(final Product product) {
-    // products.json is our name of the node which will be ether updated or created on the fly - realtime db (json file)
-    const url =
-        "https://fl-shop-d7c4e-default-rtdb.firebaseio.com/products";
     // then creates a new future, and we return the last then future
     return http
         .post(
@@ -40,11 +48,11 @@ class ProductsProvider with ChangeNotifier {
         // we need to store it per user in the future, temp solution
         "isFavorite": product.isFavorite
       }),
-    ).catchError((error) {
+    )
+        .catchError((error) {
       print(error);
       throw error;
-    })
-        .then((response) {
+    }).then((response) {
       final newProduct = Product(
           // add the id of the product created in firebase, as name
           id: json.decode(response.body)["name"],
