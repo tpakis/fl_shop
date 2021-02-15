@@ -52,7 +52,8 @@ class _EditProductScreenState extends State<EditProductScreen> {
     }
   }
 
-  void _saveForm() {
+  // return future due to async but we don't need it
+  Future<void> _saveForm() async {
     bool isValid = _formKey.currentState.validate();
     if (isValid) {
       setState(() {
@@ -60,9 +61,10 @@ class _EditProductScreenState extends State<EditProductScreen> {
       });
       // will call on save for each text input field
       _formKey.currentState.save();
-      Provider.of<ProductsProvider>(context, listen: false)
-          .addOrEditProduct(_formProduct.toProduct())
-          .then((result) {
+      try {
+        var result = await Provider.of<ProductsProvider>(context, listen: false)
+            .addOrEditProduct(_formProduct.toProduct());
+
         ScaffoldMessenger.of(context).hideCurrentSnackBar();
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -72,28 +74,27 @@ class _EditProductScreenState extends State<EditProductScreen> {
             duration: Duration(seconds: 1),
           ),
         );
-      }).catchError(
-        (error) {
-          return showDialog<Null>(
-            context: context,
-            builder: (ctx) => AlertDialog(
-              title: Text("An error occurred!"),
-              content: Text("Something went wrong!"),
-              actions: [
-                FlatButton(
-                  onPressed: Navigator.of(ctx).pop,
-                  child: Text("Ok"),
-                ),
-              ],
-            ),
-          );
-        },
-      ).then((_) {
+      } catch (error) {
+        // showDialog return a future, wait for user interaction before finally
+        await showDialog<Null>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: Text("An error occurred!"),
+            content: Text("Something went wrong!"),
+            actions: [
+              FlatButton(
+                onPressed: Navigator.of(ctx).pop,
+                child: Text("Ok"),
+              ),
+            ],
+          ),
+        );
+      } finally {
         setState(() {
           _isLoading = false;
         });
         Navigator.of(context).pop();
-      });
+      }
     }
   }
 

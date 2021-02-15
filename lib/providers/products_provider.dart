@@ -27,7 +27,7 @@ class ProductsProvider with ChangeNotifier {
   Future<void> addProduct(final Product product) {
     // products.json is our name of the node which will be ether updated or created on the fly - realtime db (json file)
     const url =
-        "https://fl-shop-d7c4e-default-rtdb.firebaseio.com/products.json";
+        "https://fl-shop-d7c4e-default-rtdb.firebaseio.com/products";
     // then creates a new future, and we return the last then future
     return http
         .post(
