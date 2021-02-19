@@ -9,7 +9,6 @@ import '../widgets/badge.dart';
 import '../widgets/products_grid.dart';
 import '../data/products_dummy_data.dart';
 
-
 enum FilterOptions { FAVORITES, ALL }
 
 class ProductsOverviewScreen extends StatefulWidget {
@@ -18,15 +17,22 @@ class ProductsOverviewScreen extends StatefulWidget {
 }
 
 class _ProductsOverviewScreenState extends State<ProductsOverviewScreen> {
-
   final productsList = DUMMY_PRODUCTS;
   var _showOnlyFavorites = false;
+  var _isLoading = false;
 
   @override
   void initState() {
     // it wouldn't work without liste false, it would require hack with didChangeDependeciews
     // or Future.delayed(Duration.zero).then(use provider)
-    Provider.of<ProductsProvider>(context, listen: false).fetchAndSetProducts();
+    _isLoading = true;
+    Provider.of<ProductsProvider>(context, listen: false)
+        .fetchAndSetProducts()
+        .then((_) {
+      setState(() {
+        _isLoading = false;
+      });
+    });
     super.initState();
   }
 
@@ -70,9 +76,12 @@ class _ProductsOverviewScreenState extends State<ProductsOverviewScreen> {
           ),
         ],
       ),
-      body: ProductsGrid(_showOnlyFavorites),
+      body: (_isLoading)
+          ? Center(
+              child: CircularProgressIndicator(),
+            )
+          : ProductsGrid(_showOnlyFavorites),
       drawer: AppDrawer(),
     );
   }
-
 }

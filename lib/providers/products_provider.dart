@@ -8,9 +8,11 @@ import '../models/product.dart';
 // with -a mixin which is similar to Delegate pattern in Kotlin
 class ProductsProvider with ChangeNotifier {
   // products.json is our name of the node which will be ether updated or created on the fly - realtime db (json file)
-  static const String url = "https://fl-shop-d7c4e-default-rtdb.firebaseio.com/products.json";
+  static const String url =
+      "https://fl-shop-d7c4e-default-rtdb.firebaseio.com/products.json";
+
   // backing private property
-  final List<Product> _products = DUMMY_PRODUCTS;
+  List<Product> _products = [];
 
   List<Product> get products {
     // returning new list to avoid mutatitng the original list, no mutableList like Kotlin
@@ -29,10 +31,25 @@ class ProductsProvider with ChangeNotifier {
   Future<void> fetchAndSetProducts() async {
     try {
       final response = await http.get(url);
+      _products = mapResponseToProductsList(response.body);
+      notifyListeners();
     } catch (error) {
       print(error);
       throw (error);
     }
+  }
+
+  List<Product> mapResponseToProductsList(String responseBody) {
+    // decode can't parse nested Map object
+    final extractedData = json.decode(responseBody) as Map<String, dynamic>;
+    return extractedData.keys
+        .map((productId) => Product(
+            id: productId,
+            title: extractedData[productId]["title"],
+            description: extractedData[productId]["description"],
+            price: extractedData[productId]["price"],
+            imageUrl: extractedData[productId]["imageUrl"]))
+        .toList();
   }
 
   Future<void> addProduct(final Product product) {
