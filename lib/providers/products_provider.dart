@@ -8,8 +8,8 @@ import '../models/product.dart';
 // with -a mixin which is similar to Delegate pattern in Kotlin
 class ProductsProvider with ChangeNotifier {
   // products.json is our name of the node which will be ether updated or created on the fly - realtime db (json file)
-  static const String url =
-      "https://fl-shop-d7c4e-default-rtdb.firebaseio.com/products.json";
+  static const String baseUrl =
+      "https://fl-shop-d7c4e-default-rtdb.firebaseio.com/";
 
   // backing private property
   List<Product> _products = [];
@@ -30,7 +30,7 @@ class ProductsProvider with ChangeNotifier {
 
   Future<void> fetchAndSetProducts() async {
     try {
-      final response = await http.get(url);
+      final response = await http.get(baseUrl + "/products.json");
       _products = mapResponseToProductsList(response.body);
       notifyListeners();
     } catch (error) {
@@ -56,7 +56,7 @@ class ProductsProvider with ChangeNotifier {
     // then creates a new future, and we return the last then future
     return http
         .post(
-      url,
+      baseUrl + "/products.json",
       body: json.encode({
         "title": product.title,
         "description": product.description,
@@ -88,13 +88,21 @@ class ProductsProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> addOrEditProduct(final Product newProduct) {
+  Future<void> addOrEditProduct(final Product newProduct) async {
     final productIndex =
         _products.indexWhere((element) => element.id == newProduct.id);
     if (productIndex != -1) {
+      await http
+          .patch(
+          baseUrl + "products/${newProduct.id}.json",
+          body: json.encode({
+            "title": newProduct.title,
+            "description": newProduct.description,
+            "imageUrl": newProduct.imageUrl,
+            "price": newProduct.price
+          }));
       _products[productIndex] = newProduct;
       notifyListeners();
-      return Future.value();
     } else {
       return addProduct(newProduct);
     }

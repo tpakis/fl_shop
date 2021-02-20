@@ -70,7 +70,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
           SnackBar(
             content: (_formProduct.id.isEmpty)
                 ? const Text('New product was added!')
-                : const Text('New product was edited!'),
+                : const Text('Product was edited!'),
             duration: Duration(seconds: 1),
           ),
         );
