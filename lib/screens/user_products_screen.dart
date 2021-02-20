@@ -17,6 +17,8 @@ class UserProductsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final productsData = Provider.of<ProductsProvider>(context);
+    // we can't use context inside a future because it refers to smth different
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
     return Scaffold(
       appBar: AppBar(
         title: const Text("Your Products"),
@@ -42,8 +44,18 @@ class UserProductsScreen extends StatelessWidget {
                   id: productsData.products[index].id,
                   title: productsData.products[index].title,
                   imageUrl: productsData.products[index].imageUrl,
-                  deleteProduct: () => productsData
-                      .deleteProductById(productsData.products[index].id),
+                  deleteProduct: () async {
+                    try {
+                      await productsData
+                          .deleteProductById(productsData.products[index].id);
+                    } catch (error) {
+                      scaffoldMessenger.showSnackBar(
+                        SnackBar(
+                          content: Text(error.toString()),
+                        ),
+                      );
+                    }
+                  },
                 ),
                 Divider(),
               ],

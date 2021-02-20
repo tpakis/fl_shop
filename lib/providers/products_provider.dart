@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_complete_guide/models/HttpException.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -83,9 +84,14 @@ class ProductsProvider with ChangeNotifier {
     });
   }
 
-  void deleteProductById(String productId) {
-    _products.removeWhere((element) => element.id == productId);
-    notifyListeners();
+  Future<void> deleteProductById(String productId) async {
+    var response = await http.delete(baseUrl + "products/$productId.js");
+    if (response.statusCode < 400) {
+      _products.removeWhere((element) => element.id == productId);
+      notifyListeners();
+    } else {
+      throw HttpException("Error while deleting product");
+    }
   }
 
   Future<void> addOrEditProduct(final Product newProduct) async {
