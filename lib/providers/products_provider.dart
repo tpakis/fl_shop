@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_complete_guide/models/HttpException.dart';
+import '../models/HttpException.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-
-import '../data/products_dummy_data.dart';
 import '../models/product.dart';
 
 // with -a mixin which is similar to Delegate pattern in Kotlin

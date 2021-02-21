@@ -41,18 +41,7 @@ class CartScreen extends StatelessWidget {
                     ),
                     backgroundColor: theme.primaryColor,
                   ),
-                  FlatButton(
-                    onPressed: () {
-                      Provider.of<OrdersProvider>(context, listen: false)
-                          .addOrder(
-                          cart.items.values.toList(), cart.totalCartAmount);
-                      cart.clearCart();
-                    },
-                    child: Text(
-                      "Order Now",
-                      style: TextStyle(color: theme.primaryColor),
-                    ),
-                  ),
+                  OrderButton(cart: cart, theme: theme),
                 ],
               ),
             ),
@@ -71,6 +60,48 @@ class CartScreen extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class OrderButton extends StatefulWidget {
+  const OrderButton({
+    Key key,
+    @required this.cart,
+    @required this.theme,
+  }) : super(key: key);
+
+  final CartProvider cart;
+  final ThemeData theme;
+
+  @override
+  _OrderButtonState createState() => _OrderButtonState();
+}
+
+class _OrderButtonState extends State<OrderButton> {
+
+  var _isLoading = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return FlatButton(
+      //with null the button is disabled by flutter automatically
+      onPressed: (widget.cart.totalCartAmount <= 0 || _isLoading) ? null : () async {
+        setState(() {
+          _isLoading = true;
+        });
+        await Provider.of<OrdersProvider>(context, listen: false)
+            .addOrder(
+            widget.cart.items.values.toList(), widget.cart.totalCartAmount);
+        setState(() {
+          _isLoading = false;
+        });
+        widget.cart.clearCart();
+      },
+      child: (_isLoading) ? CircularProgressIndicator() : Text(
+        "Order Now",
+        style: TextStyle(color: widget.theme.primaryColor),
       ),
     );
   }
