@@ -41,6 +41,9 @@ class ProductsProvider with ChangeNotifier {
   List<Product> mapResponseToProductsList(String responseBody) {
     // decode can't parse nested Map object
     final extractedData = json.decode(responseBody) as Map<String, dynamic>;
+    if (extractedData == null) {
+      return [];
+    }
     return extractedData.keys
         .map((productId) => Product(
             id: productId,

@@ -29,6 +29,33 @@ class OrdersProvider with ChangeNotifier {
     return [..._orders];
   }
 
+  Future<void> fetchAndSetOrders() async {
+    var response = await http.get(baseUrl + "orders.json");
+    _orders = _mapResponseToOrdersList(response.body).reversed.toList();
+    notifyListeners();
+  }
+
+  List<Order> _mapResponseToOrdersList(String responseBody) {
+    // decode can't parse nested Map object
+    final extractedData = json.decode(responseBody) as Map<String, dynamic>;
+    if (extractedData == null) {
+      return [];
+    }
+    return extractedData.keys
+        .map((orderId) => Order(
+            id: orderId,
+            amount: extractedData[orderId]["amount"],
+            dateTime: DateTime.parse(extractedData[orderId]["dateTime"]),
+            products: (extractedData[orderId]["products"] as List<dynamic>)
+                .map((productData) => CartItem(
+                    id: productData["id"],
+                    title: productData["title"],
+                    quantity: productData["quantity"],
+                    price: productData["price"]))
+                .toList()))
+        .toList();
+  }
+
   Future<void> addOrder(List<CartItem> cartItems, double total) async {
     final DateTime dateTimeNow = DateTime.now();
 
@@ -37,16 +64,18 @@ class OrdersProvider with ChangeNotifier {
       body: json.encode({
         "amount": total,
         "dateTime": dateTimeNow.toIso8601String(),
-        "products": cartItems.map((item) => {
-              "id": item.id,
-              "title": item.title,
-              "quantity": item.quantity,
-              "price": item.price
-            }).toList(),
+        "products": cartItems
+            .map((item) => {
+                  "id": item.id,
+                  "title": item.title,
+                  "quantity": item.quantity,
+                  "price": item.price
+                })
+            .toList(),
       }),
     );
     _orders.add(Order(
-      // auto-generated from firebase
+        // auto-generated from firebase
         id: json.decode(response.body)["name"],
         dateTime: dateTimeNow,
         products: cartItems,
